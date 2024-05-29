@@ -1,6 +1,22 @@
-import userService from "../service/user-service.js";
+import userServices from '../services/user_service.js';
+import { ResponseError } from "../exceptions/exceptions.js";
 
-const register = async (req, res, next) => {};
+const register = async (req, res) => {
+  const {body} = req;
+  try {
+    await userServices.register(body);
+    res.json({
+      message: 'Registrasi berhasil',
+      data: body
+    })
+
+  } catch (error){
+    res.status(500).json({
+      message: 'Server error',
+      serverMessage: error,
+    })
+  }
+};
 
 const login = async (req, res, next) => {};
 
