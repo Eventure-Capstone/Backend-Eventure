@@ -1,10 +1,9 @@
 import express from "express";
-//import userServices from '../services/user_service.js';
-import controller from '../controllers/user_controller.js';
+import userController from "../controllers/user_controller.js";
 
 const router = express.Router();
 
-// CREATE - POST
-router.post('/', controller.register);
+router.post("/register", userController.register);
+router.post("/login", userController.login);
 
 export { router };
