@@ -4,15 +4,26 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      =  env("DATABASE_URL")
-
+  url      = env("DATABASE_URL")
 }
 
 model User {
-  id  String @id @default(uuid())
-  email String @unique
-  full_name String 
-  password String 
+  id                 String              @id @default(uuid())
+  email              String              @unique
+  fullName           String
+  password           String
+  isActive           Boolean             @default(false)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  emailVerifications EmailVerification[]
+}
+
+model EmailVerification {
+  id        String   @id @default(uuid())
+  otpCode   String
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  expiresAt DateTime
+  isUsed    Boolean  @default(false)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
 }

@@ -1,12 +1,64 @@
 import { validate } from "../validation/validation.js";
 import { ResponseError } from "../exceptions/exceptions.js";
+import prisma from "../application/database.js";
 import bcrypt from "bcrypt";
+import crypto from "crypto";
+import { sendEmail } from "./email_service.js";
 import { db, config } from "../config/database.js";
 
-const register = async (body) => {
-  const regis = ` insert into user (name, pass, phone) 
-                  values ('${body.name}', '${body.pass}', '${body.phone}')`;
-  return db.query(regis);
+const OTP_EXPIRATION_MINUTES = 30;
+
+const register = async (fullName, email, password) => {
+  const passwordHash = await bcrypt.hash(password, 10);
+
+  const user = await prisma.user.create({
+    data: {
+      fullName,
+      email,
+      password: passwordHash,
+    },
+  });
+
+  const otpCode = generateOtp();
+  const expiresAt = new Date(Date.now() + OTP_EXPIRATION_MINUTES * 60 * 1000);
+
+  await prisma.emailVerification.create({
+    data: {
+      otpCode,
+      expiresAt,
+      userId: user.id,
+    },
+  });
+
+  await sendEmail(email, `Your OTP code is: ${otpCode}`);
+  return user;
+};
+
+const verifyOtp = async (email, otpCode) => {
+  const user = await prisma.user.findUnique({
+    where: { email },
+    include: { emailVerifications: true },
+  });
+
+  if (!user) throw new Error("User not found");
+
+  const emailVerification = user.emailVerifications.find(
+    (ev) => ev.otpCode === otpCode && !ev.isUsed && ev.expiresAt > new Date()
+  );
+
+  if (!emailVerification) throw new Error("Invalid or expired OTP");
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { isActive: true },
+  });
+
+  await prisma.emailVerification.update({
+    where: { id: emailVerification.id },
+    data: { isUsed: true },
+  });
+
+  return user;
 };
 
 const login = async (email, password) => {
@@ -29,16 +81,12 @@ const login = async (email, password) => {
   return token;
 };
 
-const get = async () => {};
-
-const update = async () => {};
-
-const logout = async () => {};
+const generateOtp = () => {
+  return crypto.randomInt(100000, 999999).toString();
+};
 
 export default {
   register,
+  verifyOtp,
   login,
-  get,
-  update,
-  logout,
 };
