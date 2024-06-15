@@ -85,8 +85,87 @@ const generateOtp = () => {
   return crypto.randomInt(100000, 999999).toString();
 };
 
+const getAllUsers = async () => {
+  const users = await prisma.user.findMany();
+  return users;
+};
+
+const getUserById = async (id) => {
+  const user = await prisma.user.findUnique({
+    where: { id: id },
+  });
+
+  if (!user) {
+    throw new ResponseError(404, "User tidak ditemukan");
+  }
+
+  return user;
+}
+
+const updateUser = async (id, fullName, email, password) => {
+  const userId = id;
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+
+  if (!user) {
+    throw new ResponseError(404, "User tidak ditemukan");
+  }
+
+  const passwordHash = await bcrypt.hash(password, 10);
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      fullName,
+      email,
+      password: passwordHash,
+    },
+  });
+};
+
+const deleteUser = async (id) => {
+  const userId = id;
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+
+  if (!user) {
+    throw new ResponseError(404, "User tidak ditemukan");
+  }
+
+  await prisma.user.delete({
+    where: { id: userId },
+  });
+
+}
+
+const createEvent = async (event_name, author, category, description, location, date, time) => {
+  //TODO: Bikin fungsi buat ambil date dari body berbentuk string menjadi sesuai format datetime
+
+  const event = await prisma.event.create({
+    data: {
+      event_name,
+      author,
+      category,
+      description,
+      location,
+      date,
+      time,
+    },
+  });
+  return event;
+}; 
+
 export default {
   register,
   verifyOtp,
   login,
+  getAllUsers,
+  getUserById,
+  updateUser,
+  deleteUser,
+  createEvent,
 };
