@@ -8,14 +8,43 @@ datasource db {
 }
 
 model User {
-  id                 String              @id @default(uuid())
-  email              String              @unique
-  fullName           String
-  password           String
-  isActive           Boolean             @default(false)
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
-  emailVerifications EmailVerification[]
+  id            String   @id @default(uuid())
+  email         String   @unique
+  fullName      String 
+  password      String 
+  isActive      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  event         Event[] 
+  userPreferences user_preferences[]
+  emailVerif    EmailVerification[]
+}
+
+model Event {
+  id            String   @id @default(uuid())
+  event_name    String
+  user          User     @relation(fields: [author], references: [email], onDelete: Cascade, onUpdate: Cascade)
+  author        String
+  category      String
+  description   String?
+  location      String
+  date          DateTime
+  time          String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model preferences {
+  id              String   @id @default(uuid())
+  name            String
+  userPreferences user_preferences[]
+}
+
+model user_preferences {
+  user           User?        @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user_id        String       @unique
+  preferences    preferences? @relation(fields: [preferences_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  preferences_id String       
 }
 
 model EmailVerification {
