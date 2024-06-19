@@ -1,0 +1,10 @@
+runtime: nodejs20
+
+env_variables:
+  JWT_SECRET:
+  JWT_EXPIRATION:
+  DATABASE_URL:
+
+handlers:
+  - url: /.*
+    script: auto
