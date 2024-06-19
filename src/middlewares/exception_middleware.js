@@ -1,26 +1,9 @@
-import { ResponseError } from "../exceptions/exceptions.js";
-
-const exceptionMiddleware = async (err, req, res, next) => {
-  if (!err) {
-    next();
-    return;
-  }
-
-  if (err instanceof ResponseError) {
-    res
-      .status(err.status)
-      .json({
-        errors: err.message,
-      })
-      .end();
-  } else {
-    res
-      .status(500)
-      .json({
-        errors: err.message,
-      })
-      .end();
-  }
+export const exceptionMiddleware = (err, req, res, next) => {
+  console.error(err);
+  const status = err.status || 500;
+  res.status(status).json({
+    success: false,
+    message: err.message || "Internal Server Error",
+    data: [],
+  });
 };
-
-export { exceptionMiddleware };

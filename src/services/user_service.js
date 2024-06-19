@@ -4,7 +4,7 @@ import prisma from "../application/database.js";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { sendEmail } from "./email_service.js";
-import { db, config } from "../config/database.js";
+import { db, config } from "../config/config.js";
 
 const OTP_EXPIRATION_MINUTES = 30;
 
@@ -65,6 +65,7 @@ const login = async (email, password) => {
   const user = await prisma.user.findUnique({
     where: { email: email },
   });
+
   if (!user) {
     throw new Error("Invalid email or password");
   }
@@ -100,7 +101,7 @@ const getUserById = async (id) => {
   }
 
   return user;
-}
+};
 
 const updateUser = async (id, fullName, email, password) => {
   const userId = id;
@@ -139,10 +140,17 @@ const deleteUser = async (id) => {
   await prisma.user.delete({
     where: { id: userId },
   });
+};
 
-}
-
-const createEvent = async (event_name, author, category, description, location, date, time) => {
+const createEvent = async (
+  event_name,
+  author,
+  category,
+  description,
+  location,
+  date,
+  time
+) => {
   //TODO: Bikin fungsi buat ambil date dari body berbentuk string menjadi sesuai format datetime
 
   const event = await prisma.event.create({
@@ -157,7 +165,7 @@ const createEvent = async (event_name, author, category, description, location, 
     },
   });
   return event;
-}; 
+};
 
 export default {
   register,
