@@ -13,7 +13,6 @@ model User {
   fullName        String
   password        String
   isActive        Boolean             @default(false)
-  profileImg      String
   event           Event[]
   userPreferences user_preferences[]
   emailVerif      EmailVerification[]
