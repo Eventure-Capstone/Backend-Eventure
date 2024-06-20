@@ -8,8 +8,9 @@ const saveUserPreference = async (user_id, preferences_id) => {
     };
   });
 
-  return await prisma.userPreferences.createMany({
+  return await prisma.userPreference.createMany({
     data: userPreferences,
+    skipDuplicates: true,s
   });
 };
 
