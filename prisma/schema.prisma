@@ -3,56 +3,84 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
-  id              String              @id @default(uuid())
-  email           String              @unique
-  fullName        String
-  password        String
-  isActive        Boolean             @default(false)
-  event           Event[]
-  userPreferences user_preferences[]
-  emailVerif      EmailVerification[]
-  createdAt       DateTime            @default(now())
-  updatedAt       DateTime            @updatedAt
+  id                  String              @id @default(uuid())
+  email               String              @unique
+  full_name           String
+  password            String
+  is_active           Boolean             @default(false)
+  profile_picture     String?
+  created_at          DateTime            @default(now())
+  updated_at          DateTime            @updatedAt
+  events              Event[]
+  preferences         UserPreference[]
+  email_verifications EmailVerification[]
+  saved_events        UserSavedEvent[]
 }
 
 model Event {
-  id          String   @id @default(uuid())
-  event_name  String
-  user        User     @relation(fields: [author], references: [email], onDelete: Cascade, onUpdate: Cascade)
-  author      String
-  category    String
-  description String?
-  location    String
-  date        DateTime
-  time        String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             String            @id @default(uuid())
+  title          String
+  author_id      String
+  category       String
+  description    String?
+  banner         String
+  location       String
+  date           DateTime
+  latitude       Float
+  longitude      Float
+  created_at     DateTime          @default(now())
+  updated_at     DateTime          @updatedAt
+  social_links   EventSocialLink[]
+  author         User              @relation(fields: [author_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  UserSavedEvent UserSavedEvent[]
 }
 
-model preferences {
-  id              String             @id @default(uuid())
-  name            String
-  userPreferences user_preferences[]
+model EventSocialLink {
+  id        String  @id @default(uuid())
+  event_id  String
+  instagram String?
+  twitter   String?
+  facebook  String?
+  website   String?
+  event     Event   @relation(fields: [event_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 
-model user_preferences {
-  user           User?        @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  user_id        String       @unique
-  preferences    preferences? @relation(fields: [preferences_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  preferences_id String
+model Preference {
+  id    String           @id @default(uuid())
+  name  String
+  users UserPreference[]
+}
+
+model UserPreference {
+  user_id       String
+  preference_id String
+  user          User       @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  preference    Preference @relation(fields: [preference_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@id([user_id, preference_id])
+}
+
+model UserSavedEvent {
+  user_id  String
+  event_id String
+  user     User   @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  event    Event  @relation(fields: [event_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@id([user_id, event_id])
 }
 
 model EmailVerification {
-  id        String   @id @default(uuid())
-  otpCode   String
-  createdAt DateTime @default(now())
-  expiresAt DateTime
-  isUsed    Boolean  @default(false)
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  id         String   @id @default(uuid())
+  otp_code   String
+  created_at DateTime @default(now())
+  expires_at DateTime
+  is_used    Boolean  @default(false)
+  user_id    String
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }

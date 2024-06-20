@@ -8,7 +8,7 @@ const db = mysql.createConnection({
 });
 
 const config = {
-  jwtSecret: process.env.JWT_SECRET || "testjwt",
-  jwtExpiration: process.env.JWT_EXPIRATION || "1h",
+  jwt_secret: process.env.JWT_SECRET || "testjwt",
+  jwt_expiration: process.env.JWT_EXPIRATION || "1h",
 };
 export { db, config };

@@ -1,11 +1,9 @@
 import userServices from "../services/user_service.js";
-import { ResponseError } from "../exceptions/exceptions.js";
-
 
 const register = async (req, res, next) => {
-  const { fullName, email, password } = req.body;
+  const { full_name, email, password } = req.body;
   try {
-    const user = await userServices.register(fullName, email, password);
+    const user = await userServices.register(full_name, email, password);
     res.json({
       message: "Registrasi berhasil",
       data: user,
@@ -16,9 +14,9 @@ const register = async (req, res, next) => {
 };
 
 const verify = async (req, res, next) => {
-  const { email, otpCode } = req.body;
+  const { email, otp_code } = req.body;
   try {
-    const user = await userServices.verifyOtp(email, otpCode);
+    const user = await userServices.verify_otp(email, otp_code);
     res.status(200).json({
       message: "Akun berhasil diverifikasi",
       data: user,
@@ -31,7 +29,7 @@ const verify = async (req, res, next) => {
 const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
-    const token = await userService.loginUser(email, password);
+    const token = await userServices.login(email, password);
     res.status(200).json({
       status: "success",
       data: { token: token },
@@ -53,7 +51,6 @@ const getAllUsers = async (req, res, next) => {
   } catch (err) {
     next(err);
   }
-
 };
 
 const updateUser = async (req, res, next) => {
@@ -84,7 +81,7 @@ const getUserById = async (req, res, next) => {
   } catch (err) {
     next(err);
   }
-}
+};
 
 const deleteUser = async (req, res, next) => {
   try {
@@ -97,12 +94,21 @@ const deleteUser = async (req, res, next) => {
   } catch (err) {
     next(err);
   }
-}
+};
 
 const createEvent = async (req, res, next) => {
   try {
-    const { event_name, author, category, description, location, date, time } = req.body;
-    const event = await userServices.createEvent(event_name, author, category, description, location, date, time);
+    const { event_name, author, category, description, location, date, time } =
+      req.body;
+    const event = await userServices.createEvent(
+      event_name,
+      author,
+      category,
+      description,
+      location,
+      date,
+      time
+    );
     res.status(201).json({
       status: "success",
       data: event,
@@ -126,4 +132,3 @@ export default {
   createEvent,
   logout,
 };
-

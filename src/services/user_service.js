@@ -1,61 +1,65 @@
 import { validate } from "../validation/validation.js";
 import { ResponseError } from "../exceptions/exceptions.js";
-import prisma from "../application/database.js";
+// import prisma from "../application/database.js";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { sendEmail } from "./email_service.js";
 import { db, config } from "../config/config.js";
+import jwt from "jsonwebtoken";
+import { PrismaClient } from "@prisma/client";
 
+const prisma = new PrismaClient();
 const OTP_EXPIRATION_MINUTES = 30;
 
-const register = async (fullName, email, password) => {
-  const passwordHash = await bcrypt.hash(password, 10);
+const register = async (full_name, email, password) => {
+  const password_hash = await bcrypt.hash(password, 10);
 
   const user = await prisma.user.create({
     data: {
-      fullName,
+      full_name,
       email,
-      password: passwordHash,
+      password: password_hash,
     },
   });
 
-  const otpCode = generateOtp();
-  const expiresAt = new Date(Date.now() + OTP_EXPIRATION_MINUTES * 60 * 1000);
-
+  const otp_code = generate_otp();
+  const expires_at = new Date(Date.now() + OTP_EXPIRATION_MINUTES * 60 * 1000);
   await prisma.emailVerification.create({
     data: {
-      otpCode,
-      expiresAt,
-      userId: user.id,
+      otp_code,
+      expires_at,
+      user_id: user.id,
     },
   });
 
-  await sendEmail(email, `Your OTP code is: ${otpCode}`);
+  await sendEmail(email, `Your OTP code is: ${otp_code}`);
   return user;
 };
 
-const verifyOtp = async (email, otpCode) => {
+const verify_otp = async (email, otp_code) => {
+  console.log(otp_code);
   const user = await prisma.user.findUnique({
     where: { email },
-    include: { emailVerifications: true },
+    include: { email_verifications: true },
   });
 
   if (!user) throw new Error("User not found");
 
-  const emailVerification = user.emailVerifications.find(
-    (ev) => ev.otpCode === otpCode && !ev.isUsed && ev.expiresAt > new Date()
+  const email_verification = user.email_verifications.find(
+    (ev) =>
+      ev.otp_code === otp_code && !ev.is_used && ev.expires_at > new Date()
   );
 
-  if (!emailVerification) throw new Error("Invalid or expired OTP");
+  if (!email_verification) throw new Error("Invalid or expired OTP");
 
   await prisma.user.update({
     where: { id: user.id },
-    data: { isActive: true },
+    data: { is_active: true },
   });
 
   await prisma.emailVerification.update({
-    where: { id: emailVerification.id },
-    data: { isUsed: true },
+    where: { id: email_verification.id },
+    data: { is_used: true },
   });
 
   return user;
@@ -70,19 +74,23 @@ const login = async (email, password) => {
     throw new Error("Invalid email or password");
   }
 
-  const isPasswordValid = await bcrypt.compare(password, user.password);
-  if (!isPasswordValid) {
+  const is_password_valid = await bcrypt.compare(password, user.password);
+  if (!is_password_valid) {
     throw new Error("Invalid email or password");
   }
 
-  const token = jwt.sign({ id: user.id }, config.jwtSecret, {
-    expiresIn: config.jwtExpiration,
-  });
+  const token = jwt.sign(
+    { id: user.id, is_active: user.is_active },
+    config.jwt_secret,
+    {
+      expiresIn: config.jwt_expiration,
+    }
+  );
 
   return token;
 };
 
-const generateOtp = () => {
+const generate_otp = () => {
   return crypto.randomInt(100000, 999999).toString();
 };
 
@@ -169,7 +177,7 @@ const createEvent = async (
 
 export default {
   register,
-  verifyOtp,
+  verify_otp,
   login,
   getAllUsers,
   getUserById,
