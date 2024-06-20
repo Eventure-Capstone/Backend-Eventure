@@ -8,9 +8,10 @@ router.post("/register", userController.register);
 router.post("/verify", userController.verify);
 router.post("/login", userController.login);
 router.post(
-  "/users/profile-picture",
+  "/users/profile_img",
   authenticateJWT,
-  userController.updateProfilePicture
+  upload.single("profile_img"),
+  userController.uploadProfileImage
 );
 router.get("/users", authenticateJWT, userController.getAllUsers);
 router.get("/users/me", authenticateJWT, userController.getUserById);

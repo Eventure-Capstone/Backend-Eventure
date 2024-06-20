@@ -1,5 +1,6 @@
 import userServices from "../services/user_service.js";
-import axios from "axios";
+import uploadServices from "../services/upload_service.js";
+
 const register = async (req, res, next) => {
   const { full_name, email, password } = req.body;
   try {
@@ -97,46 +98,26 @@ const deleteUser = async (req, res, next) => {
     next(err);
   }
 };
+const uploadProfileImage = async (req, res, next) => {
+  try {
+    if (!req.file) {
+      throw new Error("No file uploaded.");
+    }
 
-const updateProfilePicture = async (req, res, next) => {
-  const userId = req.user.id;
+    const imageUrl = await uploadServices.uploadImageToGCS(req.file);
+    const updatedUser = await userServices.updateUserProfileImage(
+      req.user.id,
+      imageUrl
+    );
 
-  const chunks = [];
-  req
-    .on("data", (chunk) => {
-      chunks.push(chunk);
-    })
-    .on("end", async () => {
-      const fileBuffer = Buffer.concat(chunks);
-      console.log("BUFFER :", fileBuffer);
-      try {
-        const response = await axios.post(
-          "https://asia-southeast1-eventure-capstone.cloudfunctions.net/upload_image",
-          fileBuffer,
-          {
-            headers: {
-              "Content-Type": req.headers["content-type"],
-            },
-            timeout: 120000, // Set timeout to 120 seconds
-          }
-        );
-
-        const image_url = response.data.image_url;
-
-        const user = await prisma.user.update({
-          where: { id: userId },
-          data: { profile_picture: image_url },
-        });
-
-        res.status(200).json({
-          status: "success",
-          message: "Profile picture updated successfully",
-          data: user,
-        });
-      } catch (error) {
-        next(error);
-      }
+    res.status(200).json({
+      success: true,
+      message: "Profile image updated successfully",
+      data: updatedUser,
     });
+  } catch (err) {
+    next(err);
+  }
 };
 
 const createEvent = async (req, res, next) => {
@@ -168,7 +149,7 @@ export default {
   register,
   verify,
   login,
-  updateProfilePicture,
+  uploadProfileImage,
   getAllUsers,
   getUserById,
   updateUser,

@@ -142,6 +142,14 @@ const updateUser = async (id, fullName, email, password) => {
   });
 };
 
+
+const updateUserProfileImage = async (userId, imageUrl) => {
+  return await prisma.user.update({
+    where: { id: userId },
+    data: { profile_picture: imageUrl },
+  });
+};
+
 const deleteUser = async (id) => {
   const userId = id;
 
@@ -187,7 +195,7 @@ export default {
   register,
   verify_otp,
   login,
-  getAllUsers,
+  updateUserProfileImage,
   getUserById,
   updateUser,
   deleteUser,
