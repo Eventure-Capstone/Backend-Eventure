@@ -29,8 +29,8 @@ model Event {
   author_id      String
   category       String
   description    String?
-  banner         String
-  location       String
+  banner         String?
+  full_address   String
   date           DateTime
   latitude       Float
   longitude      Float

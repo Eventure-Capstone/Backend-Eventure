@@ -111,7 +111,7 @@ const getUserById = async (id) => {
       },
     });
     if (!user) {
-      throw new Error("User not found");
+      throw new ResponseError(404, "User not found");
     }
     return user;
   } catch (error) {
