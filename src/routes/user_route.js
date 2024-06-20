@@ -15,7 +15,6 @@ router.post(
 );
 router.get("/users", authenticateJWT, userController.getAllUsers);
 router.get("/users/me", authenticateJWT, userController.getUserById);
-router.delete("/users/:id", authenticateJWT, userController.deleteUser);
 router.put("/users/:id", authenticateJWT, userController.updateUser);
 router.post("/createEvent", authenticateJWT, userController.createEvent);
 
