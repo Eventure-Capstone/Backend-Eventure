@@ -71,12 +71,12 @@ const updateUser = async (req, res, next) => {
 
 const getUserById = async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const { id } = req.user;
     const user = await userServices.getUserById(id);
     res.status(200).json({
       status: "success",
       data: user,
-      message: "Data user berhasil didapatkan",
+      message: "Get user profile",
     });
   } catch (err) {
     next(err);

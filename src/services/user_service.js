@@ -99,16 +99,24 @@ const getAllUsers = async () => {
   return users;
 };
 
+
 const getUserById = async (id) => {
-  const user = await prisma.user.findUnique({
-    where: { id: id },
-  });
-
-  if (!user) {
-    throw new ResponseError(404, "User tidak ditemukan");
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: id },
+      include: {
+        preferences: true,
+        events: true,
+        saved_events: true,
+      },
+    });
+    if (!user) {
+      throw new Error("User not found");
+    }
+    return user;
+  } catch (error) {
+    throw new Error(`Error retrieving user: ${error.message}`);
   }
-
-  return user;
 };
 
 const updateUser = async (id, fullName, email, password) => {

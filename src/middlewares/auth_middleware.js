@@ -7,7 +7,7 @@ export const authenticateJWT = (req, res, next) => {
   if (authHeader) {
     const token = authHeader.split(" ")[1];
 
-    jwt.verify(token, config.jwtSecret, (err, user) => {
+    jwt.verify(token, config.jwt_secret, (err, user) => {
       if (err) {
         return res.status(403).json({
           success: false,

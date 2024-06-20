@@ -4,7 +4,12 @@ env_variables:
   JWT_SECRET:
   JWT_EXPIRATION:
   DATABASE_URL:
+  DIRECT_URL: 
+  EMAIL_USER:
+  EMAIL_PASS:
 
 handlers:
   - url: /.*
     script: auto
+
+    
