@@ -1,12 +1,17 @@
 import express from "express";
 import userController from "../controllers/user_controller.js";
 import { authenticateJWT } from "../middlewares/auth_middleware.js";
-
+import upload from "../middlewares/multer_middleware.js";
 const router = express.Router();
 
 router.post("/register", userController.register);
 router.post("/verify", userController.verify);
 router.post("/login", userController.login);
+router.post(
+  "/users/profile-picture",
+  authenticateJWT,
+  userController.updateProfilePicture
+);
 router.get("/users", authenticateJWT, userController.getAllUsers);
 router.get("/users/me", authenticateJWT, userController.getUserById);
 router.delete("/users/:id", authenticateJWT, userController.deleteUser);

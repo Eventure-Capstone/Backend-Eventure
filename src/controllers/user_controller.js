@@ -1,10 +1,11 @@
 import userServices from "../services/user_service.js";
-
+import axios from "axios";
 const register = async (req, res, next) => {
   const { full_name, email, password } = req.body;
   try {
     const user = await userServices.register(full_name, email, password);
     res.json({
+      success: true,
       message: "Registrasi berhasil",
       data: user,
     });
@@ -18,6 +19,7 @@ const verify = async (req, res, next) => {
   try {
     const user = await userServices.verify_otp(email, otp_code);
     res.status(200).json({
+      success: true,
       message: "Akun berhasil diverifikasi",
       data: user,
     });
@@ -31,7 +33,7 @@ const login = async (req, res, next) => {
     const { email, password } = req.body;
     const token = await userServices.login(email, password);
     res.status(200).json({
-      status: "success",
+      success: true,
       data: { token: token },
       message: "User logged in successfully",
     });
@@ -44,7 +46,7 @@ const getAllUsers = async (req, res, next) => {
   try {
     const users = await userServices.getAllUsers();
     res.status(200).json({
-      status: "success",
+      success: true,
       data: users,
       message: "Data semua user berhasil didapatkan",
     });
@@ -96,6 +98,47 @@ const deleteUser = async (req, res, next) => {
   }
 };
 
+const updateProfilePicture = async (req, res, next) => {
+  const userId = req.user.id;
+
+  const chunks = [];
+  req
+    .on("data", (chunk) => {
+      chunks.push(chunk);
+    })
+    .on("end", async () => {
+      const fileBuffer = Buffer.concat(chunks);
+      console.log("BUFFER :", fileBuffer);
+      try {
+        const response = await axios.post(
+          "https://asia-southeast1-eventure-capstone.cloudfunctions.net/upload_image",
+          fileBuffer,
+          {
+            headers: {
+              "Content-Type": req.headers["content-type"],
+            },
+            timeout: 120000, // Set timeout to 120 seconds
+          }
+        );
+
+        const image_url = response.data.image_url;
+
+        const user = await prisma.user.update({
+          where: { id: userId },
+          data: { profile_picture: image_url },
+        });
+
+        res.status(200).json({
+          status: "success",
+          message: "Profile picture updated successfully",
+          data: user,
+        });
+      } catch (error) {
+        next(error);
+      }
+    });
+};
+
 const createEvent = async (req, res, next) => {
   try {
     const { event_name, author, category, description, location, date, time } =
@@ -125,6 +168,7 @@ export default {
   register,
   verify,
   login,
+  updateProfilePicture,
   getAllUsers,
   getUserById,
   updateUser,
