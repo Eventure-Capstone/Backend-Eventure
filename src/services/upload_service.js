@@ -3,7 +3,7 @@ import { bucket } from "../config/gcs.js";
 
 const uploadImageToGCS = async (file) => {
   const fileExtension = file.originalname.split(".").pop();
-  const fileName = `${uuidv4()}.${fileExtension}`;
+  const fileName = `user-profile-images/${uuidv4()}.${fileExtension}`;
   const fileUpload = bucket.file(fileName);
 
   const stream = fileUpload.createWriteStream({

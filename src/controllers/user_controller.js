@@ -63,7 +63,7 @@ const updateUser = async (req, res, next) => {
 
     await userServices.updateUser(id, fullName, email, password);
     res.status(200).json({
-      status: "success",
+      success: true,
       message: "User berhasil diupdate",
     });
   } catch (err) {
@@ -77,7 +77,7 @@ const getUserById = async (req, res, next) => {
     const { id } = req.user;
     const user = await userServices.getUserById(id);
     res.status(200).json({
-      status: "success",
+      success: true,
       data: user,
       message: "Get user profile",
     });
@@ -91,7 +91,7 @@ const deleteUser = async (req, res, next) => {
     const { id } = req.params;
     await userServices.deleteUser(id);
     res.status(200).json({
-      status: "success",
+      success: true,
       message: "User berhasil dihapus",
     });
   } catch (err) {
@@ -134,7 +134,7 @@ const createEvent = async (req, res, next) => {
       time
     );
     res.status(201).json({
-      status: "success",
+      success: true,
       data: event,
       message: "Event berhasil dibuat",
     });
