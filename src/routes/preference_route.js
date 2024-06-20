@@ -4,13 +4,9 @@ import { authenticateJWT } from "../middlewares/auth_middleware.js";
 
 const router = express.Router();
 
-router.get(
-  "/preferance",
-  authenticateJWT,
-  preferenceControllers.getAllPreferences
-);
+router.get("/preferences", preferenceControllers.getAllPreferences);
 router.post(
-  "/preferance",
+  "/preferences",
   authenticateJWT,
   preferenceControllers.saveUserPreference
 );
