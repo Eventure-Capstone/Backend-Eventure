@@ -7,9 +7,9 @@ env_variables:
   DIRECT_URL: 
   EMAIL_USER:
   EMAIL_PASS:
+  BUCKET_NAME:
 
 handlers:
   - url: /.*
     script: auto
 
-    

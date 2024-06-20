@@ -12,7 +12,7 @@ export const authenticateJWT = (req, res, next) => {
         return res.status(403).json({
           success: false,
           message: "Token is not valid",
-          data: [],
+          data: null,
         });
       }
 
@@ -23,7 +23,7 @@ export const authenticateJWT = (req, res, next) => {
     res.status(401).json({
       success: false,
       message: "Authorization header missing",
-      data: [],
+      data: null,
     });
   }
 };
