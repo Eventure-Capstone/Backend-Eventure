@@ -24,6 +24,41 @@ const getEventsNearby = async (latitude, longitude, radius) => {
   }
 };
 
+const saveEvent = async (user_id, event_id) => {
+  try {
+    const savedEvent = await prisma.userSavedEvent.create({
+      data: {
+        user_id,
+        event_id,
+      },
+    });
+    return savedEvent;
+  } catch (error) {
+    throw error;
+  } finally {
+    await prisma.$disconnect();
+  }
+};
+
+const deleteSavedEvent = async (user_id, event_id) => {
+  try {
+    await prisma.userSavedEvent.delete({
+      where: {
+        user_id_event_id: {
+          user_id,
+          event_id,
+        },
+      },
+    });
+  } catch (error) {
+    throw error;
+  } finally {
+    await prisma.$disconnect();
+  }
+};
+
 export default {
   getEventsNearby,
+  saveEvent,
+  deleteSavedEvent,
 };
