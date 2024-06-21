@@ -20,6 +20,86 @@ const getEventsNearby = async (req, res, next) => {
   }
 };
 
+
+const createEvent = async (req, res, next) => {
+  const user_id = req.user.id;
+  const {
+    title,
+    category,
+    description,
+    banner,
+    city,
+    full_address,
+    date,
+    latitude,
+    longitude,
+    social_links,
+  } = req.body;
+
+  try {
+    const newEvent = await eventServices.createEvent({
+      user_id,
+      title,
+      category,
+      description,
+      banner,
+      city,
+      full_address,
+      date,
+      latitude,
+      longitude,
+      social_links,
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Event successfully created",
+      data: newEvent,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const uploadBanner = async (req, res) => {
+  try {
+    if (!req.file) {
+      throw new ResponseError(400, "No file uploaded.");
+    }
+
+    const publicUrl = await eventServices.uploadBannerToGCS(req.file);
+    res.status(201).json({
+      success: true,
+      message: "Image successfully uploaded",
+      data: {
+        banner_url: publicUrl,
+      },
+    });
+  } catch (err) {
+    console.error("Error uploading file:", err);
+    next(err);
+  }
+};
+
+const getEventById = async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    const event = await eventServices.getEventById(id);
+
+    if (!event) {
+      throw new ResponseError(404, "Event not found");
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Get event detail",
+      data: event,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const saveEvent = async (req, res, next) => {
   const user_id = req.user.id;
   const { event_id } = req.body;
@@ -60,6 +140,9 @@ const deleteSavedEvent = async (req, res, next) => {
 
 export default {
   getEventsNearby,
+  getEventById,
+  uploadBanner,
+  createEvent,
   saveEvent,
   deleteSavedEvent,
 };

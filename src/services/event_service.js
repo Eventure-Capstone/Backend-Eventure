@@ -1,4 +1,6 @@
 import prisma from "../application/database.js";
+import { v4 as uuidv4 } from "uuid";
+import { bucket } from "../config/gcs.js";
 
 const getEventsNearby = async (latitude, longitude, radius) => {
   try {
@@ -17,6 +19,95 @@ const getEventsNearby = async (latitude, longitude, radius) => {
             ORDER BY distance;
         `;
     return events;
+  } catch (error) {
+    throw error;
+  } finally {
+    await prisma.$disconnect();
+  }
+};
+
+const createEvent = async (eventData) => {
+  const {
+    user_id,
+    title,
+    category,
+    description,
+    banner,
+    city,
+    full_address,
+    date,
+    latitude,
+    longitude,
+    social_links,
+  } = eventData;
+
+  try {
+    const newEvent = await prisma.event.create({
+      data: {
+        title,
+        author_id: user_id,
+        category,
+        description,
+        banner,
+        city,
+        full_address,
+        date,
+        latitude,
+        longitude,
+        social_links: {
+          create: social_links ? social_links : [],
+        },
+      },
+      include: {
+        social_links: true,
+      },
+    });
+
+    return newEvent;
+  } catch (error) {
+    throw error;
+  } finally {
+    await prisma.$disconnect();
+  }
+};
+
+const uploadBannerToGCS = async (file) => {
+  const fileExtension = file.originalname.split(".").pop();
+  const fileName = `event-banners/${uuidv4()}.${fileExtension}`;
+  const fileUpload = bucket.file(fileName);
+
+  const stream = fileUpload.createWriteStream({
+    metadata: {
+      contentType: file.mimetype,
+    },
+  });
+
+  return new Promise((resolve, reject) => {
+    stream.on("error", (err) => {
+      reject(err);
+    });
+
+    stream.on("finish", async () => {
+      await fileUpload.makePublic();
+      const publicUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
+      resolve(publicUrl);
+    });
+
+    stream.end(file.buffer);
+  });
+};
+
+const getEventById = async (id) => {
+  try {
+    const event = await prisma.event.findUnique({
+      where: { id },
+      include: {
+        author: true,
+        social_links: true,
+      },
+    });
+
+    return event;
   } catch (error) {
     throw error;
   } finally {
@@ -59,6 +150,9 @@ const deleteSavedEvent = async (user_id, event_id) => {
 
 export default {
   getEventsNearby,
+  uploadBannerToGCS,
+  getEventById,
+  createEvent,
   saveEvent,
   deleteSavedEvent,
 };
